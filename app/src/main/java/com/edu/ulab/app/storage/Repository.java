@@ -1,5 +1,4 @@
 package com.edu.ulab.app.storage;
-import com.edu.ulab.app.exception.DuplicatedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,10 +13,7 @@ public class Repository<T> {
                 .stream()
                 .filter(entity::equals)
                 .findFirst();
-        if (dublicate.isPresent()) {
-            throw new DuplicatedException("User or book already exist. Cannot add: "
-                    + dublicate.get().getClass().getSimpleName());
-        } else return storage.setEntity(entity);
+        return (dublicate.isPresent())? 0 :  storage.setEntity(entity);
     }
 
     public ConcurrentHashMap<Long, T> getAll() {

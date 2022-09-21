@@ -28,38 +28,48 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = userMapper.userDtoToUser(userDto);
+        log.info("Mapped userDTO to user: {}", user);
         long id = userRepository.create(user);
+        if (id == 0) {
+            throw new DuplicatedException("User " + user.getFullName() + " already exist. Cannot add!");
+        }
+        log.info("Created user with id: {}", id);
         return userMapper.userToUserDto(id, user);
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
         User user = userMapper.userDtoToUser(userDto);
-
+        log.info("Mapped userDTO to user: {}", user);
         ConcurrentHashMap<Long, User> allStorage = userRepository.getAll();
         Optional id = allStorage.entrySet()
                 .stream()
                 .filter(e -> e.getValue().equals(user))
+                .peek(foundedUser -> log.info("User : " + foundedUser.getValue().getFullName() + " has been founded"))
                 .map(Map.Entry::getKey)
                 .findFirst();
 
         if (id.isEmpty()) {
             throw new NotFoundException("Users didn't found");
-        } else userRepository.setEntity((Long) id.get(), user);
-        return userMapper.userToUserDto((Long) id.get(), user);
+        }
+        userDto.setId((Long) id.get());
+        return userDto;
     }
 
     @Override
     public UserDto getUserById(Long id) {
         User user = userRepository.getEntity(id);
         if (user == null) {
-            throw new NotFoundException("Users didn't found");
+            throw new NotFoundException("User didn't found");
         }
+        log.info("User " + user.getFullName() + " founded");
         return userMapper.userToUserDto(id, user);
     }
 
     @Override
     public void deleteUserById(Long id) {
+        getUserById(id);
         userRepository.deleteEntity(id);
+        log.info("User with ID " + id + " has been deleted");
     }
 }

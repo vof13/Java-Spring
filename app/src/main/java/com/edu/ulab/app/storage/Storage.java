@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Storage <T> {
-    private ConcurrentHashMap <Long, T> dataBase = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap <Long, T> dataBase = new ConcurrentHashMap<>();
     private final AtomicLong currentId = new AtomicLong(1);
 
     public long setEntity (T entity) {
@@ -33,11 +33,5 @@ public class Storage <T> {
 
     public void deleteEntity(Long id) {
         dataBase.remove(id);
-        currentId.decrementAndGet();
     }
-
-
-    //todo
-    // продумать возможные ошибки
-    // продумать что у узера может быть много книг и нужно создать эту связь
 }

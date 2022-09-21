@@ -7,13 +7,15 @@ import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.BookService;
 import com.edu.ulab.app.service.UserService;
 import com.edu.ulab.app.web.request.UserBookRequest;
+import com.edu.ulab.app.web.response.BaseWebResponse;
 import com.edu.ulab.app.web.response.UserBookResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -55,6 +57,7 @@ public class UserDataFacade {
 
     }
     public UserBookResponse getUserWithBooks(Long userId) {
+        log.info("Got user GET WITH ID request: {}", userId);
         UserDto userDto = userService.getUserById(userId);
         List<BookDto> listBookDto = bookService.getBooksByUserId(userId);
         List<Long> bookIdList = listBookDto.stream()
@@ -69,9 +72,12 @@ public class UserDataFacade {
                 .build();
     }
 
-    public void deleteUserWithBooks(Long userId) {
+    public ResponseEntity<BaseWebResponse> deleteUserWithBooks(Long userId) {
+        log.info("Got user DELETE request: {}", userId);
         userService.deleteUserById(userId);
         bookService.deleteBookByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new BaseWebResponse("User with ID " + userId + " has been deleted"));
     }
 
     private UserBookResponse createResponse (UserBookRequest userBookRequest, UserDto user) {
