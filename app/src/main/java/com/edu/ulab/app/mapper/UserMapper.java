@@ -1,6 +1,7 @@
 package com.edu.ulab.app.mapper;
 
 import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.entity.User;
 import com.edu.ulab.app.web.request.UserRequest;
 import org.mapstruct.Mapper;
@@ -11,7 +12,7 @@ public interface UserMapper {
 
     UserRequest userDtoToUserRequest(UserDto userDto);
 
-    User userDtoToUser (UserDto userDto);
+    Person userDtoToPerson(UserDto userDto);
 
-    UserDto userToUserDto(Long id, User user);
+    UserDto personToUserDto(Person user);
 }
