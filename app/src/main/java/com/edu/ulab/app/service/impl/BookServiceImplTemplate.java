@@ -53,11 +53,12 @@ public class BookServiceImplTemplate implements BookService {
 
     @Override
     public BookDto updateBook(Long id, BookDto bookDto) {
-            jdbcTemplate.update(UPDATE_SQL,
-                    bookDto.getTitle(),
-                    bookDto.getAuthor(),
-                    bookDto.getPageCount(),
-                    id);
+        getBookById(id);
+        jdbcTemplate.update(UPDATE_SQL,
+                bookDto.getTitle(),
+                bookDto.getAuthor(),
+                bookDto.getPageCount(),
+                id);
         log.info("The book has been updated {}", bookDto);
         return bookDto;
     }
