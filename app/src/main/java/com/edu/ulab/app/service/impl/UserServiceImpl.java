@@ -1,75 +1,72 @@
 package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
-import com.edu.ulab.app.entity.User;
+import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.exception.DuplicatedException;
 import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.UserMapper;
+import com.edu.ulab.app.repository.UserRepository;
 import com.edu.ulab.app.service.UserService;
-import com.edu.ulab.app.storage.Repository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final Repository<User> userRepository = new Repository<>();
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository,
+                           UserMapper userMapper) {
+        this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        User user = userMapper.userDtoToUser(userDto);
+        Person user = userMapper.userDtoToPerson(userDto);
         log.info("Mapped userDTO to user: {}", user);
-        long id = userRepository.create(user);
-        if (id == 0) {
-            throw new DuplicatedException("User " + user.getFullName() + " already exist. Cannot add!");
-        }
-        log.info("Created user with id: {}", id);
-        return userMapper.userToUserDto(id, user);
+        userRepository.findAll()
+                .forEach(person -> {
+                    if (user.equals(person)) {
+                        throw new DuplicatedException("User already exist");
+                    }
+                });
+        Person savedUser = userRepository.save(user);
+        log.info("Created user with id: {}", savedUser);
+        return userMapper.personToUserDto(user);
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        User user = userMapper.userDtoToUser(userDto);
+        Person user = userMapper.userDtoToPerson(userDto);
         log.info("Mapped userDTO to user: {}", user);
-        ConcurrentHashMap<Long, User> allStorage = userRepository.getAll();
-        Optional id = allStorage.entrySet()
-                .stream()
-                .filter(e -> e.getValue().equals(user))
-                .peek(foundedUser -> log.info("User : " + foundedUser.getValue().getFullName() + " has been founded"))
-                .map(Map.Entry::getKey)
-                .findFirst();
-
-        if (id.isEmpty()) {
-            throw new NotFoundException("Users didn't found");
+        userRepository.findAll()
+                .forEach(person -> {
+                    if (user.equals(person)) {
+                        log.info("User : " + person.getId() + " - " + person.getFullName() + " has been founded");
+                        user.setId(person.getId());
+                    }
+                });
+        if (user.getId() == null) {
+            throw new NotFoundException("User didn't found");
         }
-        userDto.setId((Long) id.get());
-        return userDto;
+        return userMapper.personToUserDto(user);
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        User user = userRepository.getEntity(id);
-        if (user == null) {
-            throw new NotFoundException("User didn't found");
-        }
-        log.info("User " + user.getFullName() + " founded");
-        return userMapper.userToUserDto(id, user);
+         Person user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User didn't found"));
+        log.info("User : " + user.getId() + " - " + user.getFullName() + " has been founded");
+        return userMapper.personToUserDto(user);
     }
 
     @Override
     public void deleteUserById(Long id) {
-        getUserById(id);
-        userRepository.deleteEntity(id);
+        Person user = userMapper.userDtoToPerson(getUserById(id));
+        userRepository.delete(user);
         log.info("User with ID " + id + " has been deleted");
     }
 }

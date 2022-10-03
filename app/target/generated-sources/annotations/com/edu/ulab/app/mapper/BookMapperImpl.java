@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-09-19T16:32:37+0300",
+    date = "2022-09-26T12:53:55+0300",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 17.0.4 (Amazon.com Inc.)"
 )
 @Component
@@ -52,6 +52,7 @@ public class BookMapperImpl implements BookMapper {
 
         Book book = new Book();
 
+        book.setId( bookDto.getId() );
         book.setUserId( bookDto.getUserId() );
         book.setTitle( bookDto.getTitle() );
         book.setAuthor( bookDto.getAuthor() );
@@ -61,22 +62,18 @@ public class BookMapperImpl implements BookMapper {
     }
 
     @Override
-    public BookDto bookToBookDto(Long id, Book book) {
-        if ( id == null && book == null ) {
+    public BookDto bookToBookDto(Book book) {
+        if ( book == null ) {
             return null;
         }
 
         BookDto bookDto = new BookDto();
 
-        if ( id != null ) {
-            bookDto.setId( id );
-        }
-        if ( book != null ) {
-            bookDto.setUserId( book.getUserId() );
-            bookDto.setTitle( book.getTitle() );
-            bookDto.setAuthor( book.getAuthor() );
-            bookDto.setPageCount( book.getPageCount() );
-        }
+        bookDto.setId( book.getId() );
+        bookDto.setUserId( book.getUserId() );
+        bookDto.setTitle( book.getTitle() );
+        bookDto.setAuthor( book.getAuthor() );
+        bookDto.setPageCount( book.getPageCount() );
 
         return bookDto;
     }
